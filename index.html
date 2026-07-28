@@ -225,6 +225,50 @@
   .drawer{width:100%;}
   .field-row{flex-direction:column;gap:8px;}
 }
+
+/* ---- FOOTER ---- */
+.site-footer{
+  background:var(--ink); color:var(--linen);
+  margin-top:40px; padding:0;
+}
+.footer-stitch{
+  height:1px; background:repeating-linear-gradient(90deg, rgba(246,241,231,0.25) 0 8px, transparent 8px 16px);
+}
+.footer-inner{
+  max-width:1100px; margin:0 auto; padding:36px 20px 22px;
+  display:grid; grid-template-columns:1.2fr 1fr; gap:30px;
+}
+.footer-brand p{margin:8px 0 0; font-size:0.85rem; opacity:0.7; max-width:38ch;}
+.footer-brand .fbrow{display:flex; align-items:center; gap:8px;}
+.footer-brand h3{font-size:1.15rem; color:var(--linen);}
+.footer-copy{
+  margin-top:16px; font-size:0.76rem; opacity:0.55;
+  border-top:1px solid rgba(246,241,231,0.14); padding-top:14px;
+}
+.footer-credit{
+  background:rgba(246,241,231,0.06);
+  border:1px solid rgba(246,241,231,0.16);
+  border-radius:10px; padding:18px 20px;
+}
+.footer-credit .credit-label{
+  font-size:0.68rem; text-transform:uppercase; letter-spacing:0.6px; opacity:0.55; margin:0;
+}
+.footer-credit .credit-name{
+  font-family:'Fraunces',serif; font-weight:600; font-size:1.1rem; margin:4px 0 10px; color:var(--linen);
+}
+.footer-credit .credit-links{display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+.footer-credit .credit-links a{
+  font-family:'IBM Plex Mono',monospace; font-size:0.82rem; text-decoration:none; color:var(--linen);
+  opacity:0.85; display:flex; align-items:center; gap:8px; transition:opacity .15s ease;
+}
+.footer-credit .credit-links a:hover{opacity:1; color:var(--brass);}
+.footer-credit .credit-note{
+  font-size:0.76rem; opacity:0.65; line-height:1.5; margin:10px 0 0;
+  border-top:1px dashed rgba(246,241,231,0.18); padding-top:10px;
+}
+@media (max-width:640px){
+  .footer-inner{grid-template-columns:1fr; padding:28px 16px 18px;}
+}
 </style>
 </head>
 <body>
@@ -243,6 +287,26 @@
 <main id="main">
   <div class="empty-state">Loading…</div>
 </main>
+
+<footer class="site-footer">
+  <div class="footer-stitch"></div>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="fbrow"><span class="dot"></span><h3 id="footer-brand-name">Shop</h3></div>
+      <p>Quality secondhand kanzus, hijabs, abayas &amp; capes — order straight to WhatsApp.</p>
+      <p class="footer-copy">© <span id="footer-year"></span> <span id="footer-brand-name2">Shop</span>. All rights reserved.</p>
+    </div>
+    <div class="footer-credit">
+      <p class="credit-label">Website &amp; digital services by</p>
+      <p class="credit-name">Okullo Abdulsalam</p>
+      <div class="credit-links">
+        <a href="tel:+256703268522">📞 0703 268 522</a>
+        <a href="mailto:okulloabdulsalam@gmail.com">✉️ okulloabdulsalam@gmail.com</a>
+      </div>
+      <p class="credit-note">Want a site or WhatsApp-order shop like this one for your own business? Get in touch — built and delivered end to end.</p>
+    </div>
+  </div>
+</footer>
 
 <!-- CART DRAWER -->
 <div class="overlay" id="cart-overlay" onclick="if(event.target===this) closeCart()">
@@ -378,6 +442,9 @@ async function init(){
   await loadCart();
   await loadUploadSecret();
   document.getElementById("brand-name").textContent = config.businessName;
+  document.getElementById("footer-brand-name").textContent = config.businessName;
+  document.getElementById("footer-brand-name2").textContent = config.businessName;
+  document.getElementById("footer-year").textContent = new Date().getFullYear();
   render();
 }
 
@@ -389,6 +456,8 @@ function currentRoute(){
 function render(){
   if(!dataReady) return;
   document.getElementById("brand-name").textContent = config.businessName;
+  document.getElementById("footer-brand-name").textContent = config.businessName;
+  document.getElementById("footer-brand-name2").textContent = config.businessName;
   renderCatNav();
   const route = currentRoute();
   document.getElementById("pin-overlay").classList.remove("show");
