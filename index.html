@@ -115,7 +115,7 @@
     border:1px solid var(--line); position:absolute; top:-6px; left:16px;
   }
   .tag-card .imgs{display:flex; gap:2px; background:var(--linen);}
-  .tag-card .imgs img{flex:1; min-width:0; height:190px; object-fit:contain; background:var(--linen);}
+  .tag-card .imgs img{flex:1; min-width:0; height:190px; object-fit:cover; background:var(--linen);}
   .tag-card .body{padding:12px 14px 14px; display:flex; flex-direction:column; gap:4px; flex:1;}
   .tag-card .name{
     font-family:'Fraunces',serif; font-weight:600; font-size:1.02rem;
@@ -227,7 +227,7 @@
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
   .tag-card{width:100%;min-width:0;}
   .tag-card .imgs{gap:1px;}
-  .tag-card .imgs img{height:115px;width:100%;object-fit:contain;}
+  .tag-card .imgs img{height:130px;width:100%;object-fit:cover;}
   .tag-card .body{padding:8px;gap:3px;}
   .tag-card .name{font-size:.82rem;line-height:1.2;}
   .tag-card .specs{font-size:.68rem;}
@@ -675,7 +675,7 @@ function renderCatalog(catId){
       const specs = Object.entries(p.specs||{}).filter(([k,v])=>v).map(([k,v])=>`${k}: ${escapeHtml(String(v))}`).join(" · ");
       const out = (p.stock||0) <= 0 || !!p.sold;
       const imgs = (p.images && p.images.length) ? p.images : ['https://placehold.co/500x600?text=No+photo'];
-      const shown = [imgs[0]];
+      const shown = imgs.length>1 ? imgs.slice(0,2) : [imgs[0]];
       return `<div class="tag-card" onclick="openProduct('${p.id}')">
         <div class="tag-hole"></div>
         <div class="imgs">${shown.map(im=>`<img class="fade-img" src="${escapeAttr(im)}" alt="${escapeAttr(p.name)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`).join("")}</div>
