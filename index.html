@@ -236,6 +236,79 @@
   .field-row{flex-direction:column;gap:8px;}
 }
 
+/* ---- SKELETON LOADING STATE ---- */
+@keyframes shimmer{
+  0%{background-position:-200% 0;}
+  100%{background-position:200% 0;}
+}
+.skel{
+  background:linear-gradient(90deg, rgba(36,31,46,0.06) 25%, rgba(36,31,46,0.12) 37%, rgba(36,31,46,0.06) 63%);
+  background-size:400% 100%;
+  animation:shimmer 1.4s ease-in-out infinite;
+  border-radius:8px;
+}
+.skel-card{
+  background:var(--paper); border:1px solid var(--line); border-radius:12px;
+  padding-top:10px; display:flex; flex-direction:column;
+}
+.skel-card .skel-img{height:190px; margin:0 0 12px; border-radius:0;}
+.skel-card .skel-line{height:12px; margin:0 14px 8px;}
+.skel-card .skel-line.w60{width:60%;}
+.skel-card .skel-line.w40{width:40%;}
+.skel-card .skel-line.price{height:16px; width:35%; margin:6px 14px 14px;}
+.skel-note{
+  text-align:center; font-size:0.78rem; opacity:0.55; margin-top:18px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.skel-note .spinner{
+  width:13px; height:13px; border-radius:50%;
+  border:2px solid rgba(36,31,46,0.2); border-top-color:var(--teal);
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---- IMAGE FADE-IN (perceived-speed on slow connections) ---- */
+img.fade-img{
+  opacity:0; transition:opacity .35s ease;
+  background:linear-gradient(90deg, rgba(36,31,46,0.05) 25%, rgba(36,31,46,0.1) 37%, rgba(36,31,46,0.05) 63%);
+  background-size:400% 100%;
+  animation:shimmer 1.4s ease-in-out infinite;
+}
+img.fade-img.loaded{
+  opacity:1; animation:none; background:none;
+}
+
+/* ---- SELLER CTA BANNER ---- */
+.seller-banner{
+  background:linear-gradient(135deg,var(--brass),var(--teal));
+  color:#fff;
+}
+.seller-banner-inner{
+  max-width:1100px; margin:0 auto; padding:11px 20px;
+  display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;
+  text-align:center;
+}
+.seller-banner p{
+  margin:0; font-size:0.85rem; font-weight:500; opacity:0.97;
+}
+.seller-banner .wa-cta{
+  display:inline-flex; align-items:center; gap:7px;
+  background:var(--ink); color:#fff; text-decoration:none;
+  padding:7px 14px; border-radius:20px; font-size:0.8rem; font-weight:600;
+  white-space:nowrap; transition:transform .15s ease;
+}
+.seller-banner .wa-cta:hover{transform:translateY(-1px);}
+.seller-banner .wa-cta svg{width:14px; height:14px; flex-shrink:0;}
+.seller-banner .dismiss{
+  background:none; border:none; color:#fff; opacity:0.7; font-size:1rem;
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+}
+.seller-banner{position:relative;}
+@media (max-width:640px){
+  .seller-banner-inner{padding:10px 40px 10px 14px; gap:8px;}
+  .seller-banner p{font-size:0.78rem;}
+}
+
 /* ---- FOOTER ---- */
 .site-footer{
   background:var(--ink); color:var(--linen);
@@ -295,8 +368,29 @@
   </div>
 </header>
 
+<div class="seller-banner" id="seller-banner">
+  <div class="seller-banner-inner">
+    <p>Want to sell on a platform like this, or get your own shop built?</p>
+    <a class="wa-cta" id="seller-wa-link" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.32A7.85 7.85 0 0 0 12.05 4a7.94 7.94 0 0 0-6.9 11.9L4 20l4.2-1.1a7.9 7.9 0 0 0 3.85 1h.01a7.94 7.94 0 0 0 5.54-13.58zM12.06 18.4h-.01a6.6 6.6 0 0 1-3.36-.92l-.24-.14-2.5.66.67-2.44-.16-.25a6.6 6.6 0 1 1 12.28-3.5 6.56 6.56 0 0 1-6.68 6.6zm3.6-4.94c-.2-.1-1.16-.57-1.34-.64-.18-.06-.31-.1-.44.1-.13.19-.5.64-.62.78-.11.13-.23.15-.42.05-.2-.1-.83-.3-1.58-.97-.58-.52-.98-1.16-1.09-1.35-.11-.2 0-.3.09-.4.09-.1.2-.24.29-.36.1-.12.13-.2.2-.33.06-.13.03-.25-.02-.34-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11 0-.25 0-.38 0-.13 0-.34.05-.52.24-.18.19-.68.66-.68 1.6s.7 1.86.8 1.99c.1.13 1.37 2.1 3.33 2.94.46.2.83.32 1.11.41.47.15.9.13 1.24.08.38-.06 1.16-.47 1.32-.93.16-.45.16-.84.11-.92-.05-.08-.18-.13-.38-.23z"/></svg>
+      Chat on WhatsApp
+    </a>
+    <button class="dismiss" onclick="dismissSellerBanner()" aria-label="Dismiss">&times;</button>
+  </div>
+</div>
+
 <main id="main">
-  <div class="empty-state">Loading…</div>
+  <div class="hero">
+    <div class="skel skel-line w40" style="height:22px;width:220px;margin:0 0 14px;"></div>
+    <div class="skel skel-line w60" style="height:14px;width:70%;"></div>
+  </div>
+  <div class="grid">
+    <div class="skel-card"><div class="skel skel-img"></div><div class="skel skel-line w60"></div><div class="skel skel-line w40"></div><div class="skel skel-line price"></div></div>
+    <div class="skel-card"><div class="skel skel-img"></div><div class="skel skel-line w60"></div><div class="skel skel-line w40"></div><div class="skel skel-line price"></div></div>
+    <div class="skel-card"><div class="skel skel-img"></div><div class="skel skel-line w60"></div><div class="skel skel-line w40"></div><div class="skel skel-line price"></div></div>
+    <div class="skel-card"><div class="skel skel-img"></div><div class="skel skel-line w60"></div><div class="skel skel-line w40"></div><div class="skel skel-line price"></div></div>
+  </div>
+  <div class="skel-note" id="skel-note"><span class="spinner"></span> <span>Loading your shop…</span></div>
 </main>
 
 <footer class="site-footer">
@@ -311,7 +405,7 @@
       <p class="credit-label">Website &amp; digital services by</p>
       <p class="credit-name">Okullo Abdulsalam</p>
       <div class="credit-links">
-        <a href="tel:+256703268522">📞 0703 268 522</a>
+        <a href="#" id="footer-wa-link" target="_blank" rel="noopener">💬 WhatsApp: 0703 268 522</a>
         <a href="mailto:okulloabdulsalam@gmail.com">✉️ okulloabdulsalam@gmail.com</a>
       </div>
       <p class="credit-note">Want a site or WhatsApp-order shop like this one for your own business? Get in touch — built and delivered end to end.</p>
@@ -444,6 +538,32 @@ function saveUploadSecret(val){
   try{ localStorage.setItem("shop-upload-secret", val); }catch(e){ console.error(e); }
 }
 
+/* ---------------- SELLER CTA BANNER ---------------- */
+const SELLER_WHATSAPP = "256703268522";
+(function setupSellerBanner(){
+  const banner = document.getElementById("seller-banner");
+  const link = document.getElementById("seller-wa-link");
+  if (!banner || !link) return;
+
+  if (sessionStorage.getItem("sellerBannerDismissed") === "1"){
+    banner.style.display = "none";
+    return;
+  }
+  const msg = "Hi! I'd like to sell on a platform like Salaam Garmets, or get a shop like this built for my own business.";
+  link.href = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+})();
+
+const footerWaLink = document.getElementById("footer-wa-link");
+if (footerWaLink){
+  const footerMsg = "Hi Abdulsalam, I found your work through a shop you built and I have an enquiry.";
+  footerWaLink.href = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(footerMsg)}`;
+}
+function dismissSellerBanner(){
+  const banner = document.getElementById("seller-banner");
+  if (banner) banner.style.display = "none";
+  try{ sessionStorage.setItem("sellerBannerDismissed", "1"); }catch(e){}
+}
+
 /* ---------------- PWA: install + service worker ---------------- */
 let deferredInstallPrompt = null;
 window.addEventListener("beforeinstallprompt", (e) => {
@@ -475,7 +595,18 @@ window.addEventListener("hashchange", render);
 window.addEventListener("DOMContentLoaded", init);
 
 async function init(){
+  const note = document.getElementById("skel-note");
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const isSlow = conn && (conn.saveData || ["slow-2g","2g","3g"].includes(conn.effectiveType));
+  if (note && isSlow){
+    note.querySelector("span:last-child").textContent = "Loading on a slower connection — hang tight, your photos are on the way…";
+  }
+  const patienceTimer = setTimeout(() => {
+    if (note && !dataReady) note.querySelector("span:last-child").textContent = "Still loading — thanks for your patience…";
+  }, 6000);
+
   await loadAll();
+  clearTimeout(patienceTimer);
   await loadCart();
   await loadUploadSecret();
   document.getElementById("brand-name").textContent = config.businessName;
@@ -539,18 +670,17 @@ function renderCatalog(catId){
   } else {
     html += `<div class="grid">` + list.map(p=>{
       const specs = Object.entries(p.specs||{}).filter(([k,v])=>v).map(([k,v])=>`${k}: ${escapeHtml(String(v))}`).join(" · ");
-      const out = (p.stock||0) <= 0;
+      const out = (p.stock||0) <= 0 || !!p.sold;
       const imgs = (p.images && p.images.length) ? p.images : ['https://placehold.co/500x600?text=No+photo'];
       const shown = imgs.length>1 ? imgs.slice(0,2) : [imgs[0]];
       return `<div class="tag-card" onclick="openProduct('${p.id}')">
         <div class="tag-hole"></div>
-        <div class="imgs">${shown.map(im=>`<img src="${escapeAttr(im)}" alt="${escapeAttr(p.name)}">`).join("")}</div>
+        <div class="imgs">${shown.map(im=>`<img class="fade-img" src="${escapeAttr(im)}" alt="${escapeAttr(p.name)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`).join("")}</div>
         <div class="body">
           <div class="name">${escapeHtml(p.name)}</div>
-          <div class="specs">${specs}</div>
+          <div class="specs">${out ? '<span class="sold-out">Sold</span>' : specs}</div>
           <div class="row-bottom">
             <span class="price-tag">${money(p.price)}</span>
-            ${out ? '<span class="sold-out">Sold</span>' : ''}
           </div>
         </div>
       </div>`;
@@ -577,14 +707,14 @@ function renderProductModal(){
   const p = activeProduct;
   const images = (p.images && p.images.length) ? p.images : ["https://placehold.co/500x600?text=No+photo"];
   const cat = categories.find(c=>c.id===p.categoryId);
-  const out = (p.stock||0) <= 0;
+  const out = (p.stock||0) <= 0 || !!p.sold;
   const specsHtml = Object.entries(p.specs||{}).filter(([k,v])=>v)
     .map(([k,v])=>`<span class="spec-chip">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join("");
 
   document.getElementById("product-sheet").innerHTML = `
-    <img src="${escapeAttr(images[modalImgIndex])}" style="width:100%; height:300px; object-fit:cover; border-radius:12px;">
+    <img class="fade-img" src="${escapeAttr(images[modalImgIndex])}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" style="width:100%; height:300px; object-fit:cover; border-radius:12px;">
     ${images.length>1 ? `<div style="display:flex; gap:6px; margin-top:8px;">` +
-      images.map((im,i)=>`<img src="${escapeAttr(im)}" onclick="modalImgIndex=${i}; renderProductModal();"
+      images.map((im,i)=>`<img class="fade-img" src="${escapeAttr(im)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onclick="modalImgIndex=${i}; renderProductModal();"
         style="width:50px;height:50px;object-fit:cover;border-radius:3px;cursor:pointer;opacity:${i===modalImgIndex?1:0.5};">`).join("") + `</div>` : ""}
     <h3 style="margin-top:14px;">${escapeHtml(p.name)}</h3>
     <div style="opacity:0.6; font-size:0.78rem;">${cat ? escapeHtml(cat.name) : ""}</div>
@@ -656,7 +786,7 @@ function renderCart(){
   } else {
     body.innerHTML = cart.map((l,i)=>`
       <div class="cart-line">
-        <img src="${escapeAttr(l.image||'https://placehold.co/100')}">
+        <img class="fade-img" loading="lazy" decoding="async" onload="this.classList.add('loaded')" src="${escapeAttr(l.image||'https://placehold.co/100')}">
         <div class="info">
           <div class="name">${escapeHtml(l.name)}</div>
           <div class="meta">${escapeHtml(l.specs||"")} · Qty ${l.qty} · ${money(l.price*l.qty)}</div>
@@ -740,10 +870,10 @@ function renderAdminProducts(){
     ${products.map(p=>{
       const cat = categories.find(c=>c.id===p.categoryId);
       return `<div class="admin-list-item">
-        <img src="${escapeAttr((p.images&&p.images[0])||'https://placehold.co/100')}">
+        <img class="fade-img" loading="lazy" decoding="async" onload="this.classList.add('loaded')" src="${escapeAttr((p.images&&p.images[0])||'https://placehold.co/100')}">
         <div style="flex:1;">
           <div style="font-weight:600; font-size:0.88rem;">${escapeHtml(p.name)}</div>
-          <div class="hint">${cat?escapeHtml(cat.name):""} · ${money(p.price)} · stock ${p.stock||0}</div>
+          <div class="hint">${cat?escapeHtml(cat.name):""} · ${money(p.price)} · stock ${p.stock||0}${p.sold ? ' · <span style="color:var(--clay);font-weight:600;">Sold</span>' : ''}</div>
         </div>
         <button class="tiny-btn" onclick="openProductForm('${p.id}')">Edit</button>
         <button class="tiny-btn danger" onclick="deleteProduct('${p.id}')">Delete</button>
@@ -753,7 +883,7 @@ function renderAdminProducts(){
 }
 
 function openProductForm(id){
-  const p = id ? products.find(x=>x.id===id) : { id:null, categoryId:categories[0]?.id||"", name:"", price:"", images:[""], specs:{}, stock:1, description:"" };
+  const p = id ? products.find(x=>x.id===id) : { id:null, categoryId:categories[0]?.id||"", name:"", price:"", images:[""], specs:{}, stock:1, sold:false, description:"" };
   const cat = categories.find(c=>c.id===p.categoryId) || categories[0];
   const specFields = cat ? cat.specFields : [];
   document.getElementById("product-sheet").innerHTML = `
@@ -768,6 +898,11 @@ function openProductForm(id){
       <div><label>Price (${config.currency})</label><input type="number" id="pf-price" value="${p.price}"></div>
       <div><label>Stock / quantity</label><input type="number" id="pf-stock" value="${p.stock||1}" min="0"></div>
     </div>
+    <label style="display:flex; align-items:center; gap:8px; margin-top:14px;">
+      <input type="checkbox" id="pf-sold" ${p.sold ? "checked" : ""} style="width:auto;">
+      Mark as sold
+    </label>
+    <div class="hint">Shows "Sold" on the listing instead of its specs. The product stays visible and clickable — customers can still open it to see the full details and photos, they just can't add it to cart.</div>
     <label>Upload photos</label>
     <input type="file" id="pf-file" accept="image/*" multiple onchange="handlePhotoUpload(this)">
     <div class="hint" id="pf-upload-status"></div>
@@ -784,6 +919,34 @@ function openProductForm(id){
   renderProductSpecFields(specFields);
   document.getElementById("product-overlay").classList.add("show");
 }
+/* Resize to a sensible max dimension and re-encode as high-quality WebP.
+   This cuts typical phone-camera photos (often 3-8MB) down to a few
+   hundred KB with no visible loss — product cards display at well under
+   this size, and 1600px is still plenty sharp if a customer pinch-zooms. */
+async function compressImage(file, maxDim = 1600, quality = 0.86){
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) return file; // fallback: upload the original if decoding fails
+
+  let { width, height } = bitmap;
+  if (width > maxDim || height > maxDim){
+    const scale = maxDim / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(bitmap, 0, 0, width, height);
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+  if (!blob) return file; // fallback if WebP encoding isn't supported
+
+  // Only use the compressed version if it's actually smaller.
+  return blob.size < file.size ? blob : file;
+}
+
 async function handlePhotoUpload(input){
   const status = document.getElementById("pf-upload-status");
   const files = Array.from(input.files || []);
@@ -793,17 +956,22 @@ async function handlePhotoUpload(input){
   const textarea = document.getElementById("pf-images");
   for(let i=0; i<files.length; i++){
     const file = files[i];
-    status.textContent = `Uploading ${i+1} of ${files.length}…`;
+    status.textContent = `Compressing ${i+1} of ${files.length}…`;
     status.style.color = "";
     try{
+      const compressed = await compressImage(file);
+      const isWebp = compressed !== file;
+      const filename = isWebp ? file.name.replace(/\.[^.]+$/, "") + ".webp" : file.name;
+
+      status.textContent = `Uploading ${i+1} of ${files.length}…`;
       const res = await fetch(API_BASE + "/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${uploadSecret}`,
-          "Content-Type": file.type || "application/octet-stream",
-          "X-Filename": file.name
+          "Content-Type": isWebp ? "image/webp" : (file.type || "application/octet-stream"),
+          "X-Filename": filename
         },
-        body: file
+        body: compressed
       });
       if(!res.ok){ throw new Error("Upload failed (" + res.status + ")"); }
       const data = await res.json();
@@ -838,6 +1006,7 @@ async function saveProductForm(id){
   const name = document.getElementById("pf-name").value.trim();
   const price = Number(document.getElementById("pf-price").value)||0;
   const stock = Number(document.getElementById("pf-stock").value)||0;
+  const sold = document.getElementById("pf-sold").checked;
   const images = document.getElementById("pf-images").value.split("\n").map(s=>s.trim()).filter(Boolean);
   const desc = document.getElementById("pf-desc").value;
   if(!name){ showToast("Please add a product name"); return; }
@@ -846,9 +1015,9 @@ async function saveProductForm(id){
 
   if(id){
     const p = products.find(x=>x.id===id);
-    Object.assign(p, { categoryId:catId, name, price, images, stock, specs, description:desc });
+    Object.assign(p, { categoryId:catId, name, price, images, stock, sold, specs, description:desc });
   } else {
-    products.push({ id: slugify(name)+"-"+Date.now().toString(36), categoryId:catId, name, price, images, stock, specs, description:desc });
+    products.push({ id: slugify(name)+"-"+Date.now().toString(36), categoryId:catId, name, price, images, stock, sold, specs, description:desc });
   }
   await saveProducts(true);
   closeProduct();
