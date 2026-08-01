@@ -21,6 +21,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+<link rel="preconnect" href="https://shop-images.okulloz-shop.workers.dev">
+<link rel="dns-prefetch" href="https://shop-images.okulloz-shop.workers.dev">
+
 <!-- Installable app (PWA) setup -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#241F2E">
@@ -672,7 +675,7 @@ function renderCatalog(catId){
       const specs = Object.entries(p.specs||{}).filter(([k,v])=>v).map(([k,v])=>`${k}: ${escapeHtml(String(v))}`).join(" · ");
       const out = (p.stock||0) <= 0 || !!p.sold;
       const imgs = (p.images && p.images.length) ? p.images : ['https://placehold.co/500x600?text=No+photo'];
-      const shown = imgs.length>1 ? imgs.slice(0,2) : [imgs[0]];
+      const shown = [imgs[0]];
       return `<div class="tag-card" onclick="openProduct('${p.id}')">
         <div class="tag-hole"></div>
         <div class="imgs">${shown.map(im=>`<img class="fade-img" src="${escapeAttr(im)}" alt="${escapeAttr(p.name)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`).join("")}</div>
