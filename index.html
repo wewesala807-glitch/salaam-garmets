@@ -627,6 +627,7 @@ function currentRoute(){
 function render(){
   if(!dataReady) return;
   document.getElementById("brand-name").textContent = config.businessName;
+  document.title = config.businessName;
   document.getElementById("footer-brand-name").textContent = config.businessName;
   document.getElementById("footer-brand-name2").textContent = config.businessName;
   renderCatNav();
