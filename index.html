@@ -20,6 +20,16 @@
 <meta name="twitter:image" content="https://wewesala807-glitch.github.io/salaam-garmets/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Installable app (PWA) setup -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#241F2E">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Salaam Garmets">
 <style>
   :root{
     --ink:#241F2E;
@@ -278,6 +288,7 @@
     <a href="#/" class="brand"><span class="dot"></span><h1 id="brand-name">Shop</h1></a>
     <nav class="cats" id="cat-nav"></nav>
     <div class="nav-right">
+      <button class="icon-btn" id="install-btn" onclick="promptInstall()" style="display:none;">⤓ Install</button>
       <button class="icon-btn" onclick="openCart()">Cart<span class="badge" id="cart-badge" style="display:none;">0</span></button>
       <a href="#/admin" class="admin-link">admin</a>
     </div>
@@ -431,6 +442,32 @@ function loadUploadSecret(){
 function saveUploadSecret(val){
   uploadSecret = val;
   try{ localStorage.setItem("shop-upload-secret", val); }catch(e){ console.error(e); }
+}
+
+/* ---------------- PWA: install + service worker ---------------- */
+let deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById("install-btn");
+  if (btn) btn.style.display = "flex";
+});
+async function promptInstall(){
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById("install-btn").style.display = "none";
+}
+window.addEventListener("appinstalled", () => {
+  const btn = document.getElementById("install-btn");
+  if (btn) btn.style.display = "none";
+  deferredInstallPrompt = null;
+});
+if ("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((e) => console.warn("SW registration failed:", e));
+  });
 }
 
 /* ---------------- ROUTER ---------------- */
