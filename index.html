@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salaam Garmets</title>
-<meta name="description" content="Quality secondhand kanzus, hijabs, abayas & capes — order straight to WhatsApp.">
+<title>Salaam Market</title>
+<meta name="description" content="Salaam Market — Modest Fashion & Everyday Essentials. Order straight to WhatsApp.">
 
 <!-- Share preview (WhatsApp, Facebook, etc.) -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Salaam Garmets">
-<meta property="og:description" content="Quality secondhand kanzus, hijabs, abayas & capes — order straight to WhatsApp.">
+<meta property="og:title" content="Salaam Market">
+<meta property="og:description" content="Modest Fashion & Everyday Essentials — order straight to WhatsApp.">
 <meta property="og:image" content="https://wewesala807-glitch.github.io/salaam-garmets/og-image.png">
 <meta property="og:url" content="https://wewesala807-glitch.github.io/salaam-garmets/">
 
 <!-- Share preview (Twitter/X) -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Salaam Garmets">
-<meta name="twitter:description" content="Quality secondhand kanzus, hijabs, abayas & capes — order straight to WhatsApp.">
+<meta name="twitter:title" content="Salaam Market">
+<meta name="twitter:description" content="Modest Fashion & Everyday Essentials — order straight to WhatsApp.">
 <meta name="twitter:image" content="https://wewesala807-glitch.github.io/salaam-garmets/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Salaam Garmets">
+<meta name="apple-mobile-web-app-title" content="Salaam Market">
 <style>
   :root{
     --ink:#241F2E;
@@ -402,7 +402,7 @@ img.fade-img.loaded{
   <div class="footer-inner">
     <div class="footer-brand">
       <div class="fbrow"><span class="dot"></span><h3 id="footer-brand-name">Shop</h3></div>
-      <p>Quality secondhand kanzus, hijabs, abayas &amp; capes — order straight to WhatsApp.</p>
+      <p>Modest Fashion &amp; Everyday Essentials — order straight to WhatsApp.</p>
       <p class="footer-copy">© <span id="footer-year"></span> <span id="footer-brand-name2">Shop</span>. All rights reserved.</p>
     </div>
     <div class="footer-credit">
@@ -458,7 +458,7 @@ const API_BASE = "https://shop-images.okulloz-shop.workers.dev";
 
 let categories = [];
 let products = [];
-let config = { businessName:"Your Shop", whatsapp:"256700000000", currency:"UGX", pin:"1234" };
+let config = { businessName:"Salaam Market", whatsapp:"256700000000", currency:"UGX", pin:"1234" };
 let cart = [];
 let isAdmin = false;
 let dataReady = false;
@@ -582,7 +582,7 @@ const SELLER_WHATSAPP = "256703268522";
     banner.style.display = "none";
     return;
   }
-  const msg = "Hi! I'd like to sell on a platform like Salaam Garmets, or get a shop like this built for my own business.";
+  const msg = "Hi! I'd like to sell on a platform like Salaam Market, or get a shop like this built for my own business.";
   link.href = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
 })();
 
@@ -751,7 +751,7 @@ function renderCatalog(catId){
 
   let html = `<div class="hero">
       <h2>${cat ? escapeHtml(cat.name) : escapeHtml(config.businessName)}</h2>
-      <p>${cat ? "Browse this category and tap a piece to see details." : "Tap any product for details, add it to your cart, then send your order or inquire about it  straight through WhatsApp."}</p>
+      <p>${cat ? "Browse this category and tap a piece to see details." : "Modest Fashion &amp; Everyday Essentials — tap any product for details, add it to your cart, then send your order or inquire about it straight through WhatsApp."}</p>
     </div>
     <select id="mobile-cat-select" class="mobile-cat-select" onchange="if(this.value){location.hash='#/category/'+this.value;}else{location.hash='#/';}">
       <option value="">All categories</option>

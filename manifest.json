@@ -1,7 +1,7 @@
 {
-  "name": "Salaam Garmets",
-  "short_name": "Salaam Garmets",
-  "description": "Quality secondhand kanzus, hijabs, abayas & capes — order straight to WhatsApp.",
+  "name": "Salaam Market",
+  "short_name": "Salaam Market",
+  "description": "Salaam Market — Modest Fashion & Everyday Essentials. Order straight to WhatsApp.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
