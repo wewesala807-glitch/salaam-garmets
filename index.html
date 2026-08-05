@@ -312,6 +312,13 @@ img.fade-img.loaded{
   .seller-banner p{font-size:0.78rem;}
 }
 
+.offline-fullpage{
+  text-align:center; padding:60px 24px; max-width:400px; margin:0 auto;
+}
+.offline-fullpage .icon{font-size:2.6rem; margin-bottom:10px;}
+.offline-fullpage h2{margin:0 0 8px;}
+.offline-fullpage p{opacity:0.7; font-size:0.9rem; margin:0 0 20px;}
+
 /* ---- FOOTER ---- */
 .site-footer{
   background:var(--ink); color:var(--linen);
@@ -370,6 +377,10 @@ img.fade-img.loaded{
     </div>
   </div>
 </header>
+
+<div id="offline-banner" style="display:none; background:#B45309; color:#fff; text-align:center; font-size:0.82rem; padding:8px 14px; font-weight:600;">
+  📡 You're offline — showing the last saved version of the shop
+</div>
 
 <div class="seller-banner" id="seller-banner">
   <div class="seller-banner-inner">
@@ -489,16 +500,11 @@ function showToast(msg){
    visitor sees the same catalog. Personal, device-only data (cart, admin secret)
    lives in this browser's localStorage. */
 
-async function fetchData(key, fallback){
-  try{
-    const res = await fetch(`${API_BASE}/data/${key}`);
-    if(!res.ok) throw new Error("fetch failed " + res.status);
-    const val = await res.json();
-    return val === null ? fallback : val;
-  }catch(e){
-    console.error("load error for", key, e);
-    return fallback;
-  }
+async function fetchData(key, emptyDefault){
+  const res = await fetch(`${API_BASE}/data/${key}`);
+  if(!res.ok) throw new Error("fetch failed " + res.status);
+  const val = await res.json();
+  return val === null ? emptyDefault : val; // null = key genuinely not set up yet
 }
 async function putData(key, value, toast){
   try{
@@ -531,8 +537,6 @@ function applyShopData(data){
   dataReady = true;
 }
 
-// Fetches categories/products/config at the same time instead of one after
-// another — three parallel requests instead of three in sequence.
 async function fetchShopDataRemote(){
   const [cats, prods, cfg] = await Promise.all([
     fetchData("categories", DEFAULT_CATEGORIES),
@@ -635,6 +639,61 @@ function updateBrandBits(){
   document.getElementById("footer-year").textContent = new Date().getFullYear();
 }
 
+/* ---------------- OFFLINE HANDLING ---------------- */
+function updateOfflineBanner(){
+  const banner = document.getElementById("offline-banner");
+  if (!banner) return;
+  // Only show the small banner when we're offline AND already showing real
+  // (cached) shop content — the full no-internet screen covers the other case.
+  const hasContent = dataReady && products && products.length > 0;
+  banner.style.display = (!navigator.onLine && hasContent) ? "block" : "none";
+}
+window.addEventListener("online", updateOfflineBanner);
+window.addEventListener("offline", updateOfflineBanner);
+
+function renderOfflinePage(){
+  const main = document.getElementById("main");
+  main.innerHTML = `
+    <div class="offline-fullpage">
+      <div class="icon">📡</div>
+      <h2>No internet connection</h2>
+      <p>This shop hasn't finished loading on this device yet, so it needs a connection the first time. Connect to the internet and try again.</p>
+      <button class="btn" onclick="retryConnection()">Try again</button>
+    </div>
+  `;
+}
+async function retryConnection(){
+  const main = document.getElementById("main");
+  main.innerHTML = `<div class="offline-fullpage"><div class="icon">📡</div><h2>Checking…</h2></div>`;
+  try{
+    const fresh = await fetchShopDataRemote();
+    applyShopData(fresh);
+    cacheShopData(fresh);
+    updateBrandBits();
+    updateOfflineBanner();
+    render();
+    startAutoRefresh();
+  }catch(e){
+    renderOfflinePage();
+  }
+}
+window.addEventListener("online", () => {
+  // If we're stuck on the no-internet screen when connectivity returns, recover automatically.
+  if (!dataReady || !products || products.length === 0) retryConnection();
+});
+
+// Used by every product/cart/admin <img>'s onerror handler so a broken or
+// offline image shows a calm placeholder instead of the browser's broken-image icon.
+const IMG_FALLBACK = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="360"><rect width="100%" height="100%" fill="#EFEAE0"/><text x="50%" y="48%" font-family="sans-serif" font-size="15" fill="#8a8072" text-anchor="middle">Photo unavailable</text><text x="50%" y="60%" font-family="sans-serif" font-size="12" fill="#a49b8c" text-anchor="middle">(offline or connection issue)</text></svg>`
+);
+function imgFallback(el){
+  if (el.dataset.fallbackApplied) return; // avoid loops if the placeholder itself fails
+  el.dataset.fallbackApplied = "1";
+  el.src = IMG_FALLBACK;
+  el.classList.add("loaded"); // stop the shimmer animation
+}
+
 async function init(){
   const note = document.getElementById("skel-note");
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -657,6 +716,7 @@ async function init(){
     clearTimeout(patienceTimer);
     updateBrandBits();
     render();
+    updateOfflineBanner();
   }
 
   // Always fetch the current data too (this is the only load path on a
@@ -669,10 +729,19 @@ async function init(){
     cacheShopData(fresh);
     updateBrandBits();
     if (changed) render();
+    updateOfflineBanner();
   }catch(e){
     console.error("initial data fetch failed", e);
     clearTimeout(patienceTimer);
-    if (!cached){ dataReady = true; updateBrandBits(); render(); }
+    if (!cached){
+      // Truly nothing to show: never loaded before, and can't reach the
+      // network now. Say so clearly instead of a blank/empty catalog.
+      renderOfflinePage();
+    } else {
+      // We already painted the cached version above — just let them know
+      // it may not be current.
+      updateOfflineBanner();
+    }
   }
 
   startAutoRefresh();
@@ -685,7 +754,7 @@ async function init(){
    changes without ever needing to manually reload. */
 let refreshInFlight = false;
 async function refreshShopDataInBackground(){
-  if (refreshInFlight || !navigator.onLine) return;
+  if (refreshInFlight || !navigator.onLine) { updateOfflineBanner(); return; }
   if (currentRoute()[0] === "admin") return; // don't clobber unsaved admin edits
   refreshInFlight = true;
   try{
@@ -697,7 +766,8 @@ async function refreshShopDataInBackground(){
       updateBrandBits();
       render();
     }
-  }catch(e){ /* silent — next interval or trigger will retry */ }
+    updateOfflineBanner();
+  }catch(e){ updateOfflineBanner(); /* silent otherwise — next interval or trigger will retry */ }
   refreshInFlight = false;
 }
 function startAutoRefresh(){
@@ -768,7 +838,7 @@ function renderCatalog(catId){
       const shown = imgs.length>1 ? imgs.slice(0,2) : [imgs[0]];
       return `<div class="tag-card" onclick="openProduct('${p.id}')">
         <div class="tag-hole"></div>
-        <div class="imgs">${shown.map(im=>`<img class="fade-img" src="${escapeAttr(im)}" alt="${escapeAttr(p.name)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`).join("")}</div>
+        <div class="imgs">${shown.map(im=>`<img class="fade-img" src="${escapeAttr(im)}" alt="${escapeAttr(p.name)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="imgFallback(this)">`).join("")}</div>
         <div class="body">
           <div class="name">${escapeHtml(p.name)}</div>
           <div class="specs">${out ? '<span class="sold-out">Sold</span>' : specs}</div>
@@ -805,9 +875,9 @@ function renderProductModal(){
     .map(([k,v])=>`<span class="spec-chip">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join("");
 
   document.getElementById("product-sheet").innerHTML = `
-    <img class="fade-img" src="${escapeAttr(images[modalImgIndex])}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" style="width:100%; height:300px; object-fit:cover; border-radius:12px;">
+    <img class="fade-img" src="${escapeAttr(images[modalImgIndex])}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="imgFallback(this)" style="width:100%; height:300px; object-fit:cover; border-radius:12px;">
     ${images.length>1 ? `<div style="display:flex; gap:6px; margin-top:8px;">` +
-      images.map((im,i)=>`<img class="fade-img" src="${escapeAttr(im)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onclick="modalImgIndex=${i}; renderProductModal();"
+      images.map((im,i)=>`<img class="fade-img" src="${escapeAttr(im)}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="imgFallback(this)" onclick="modalImgIndex=${i}; renderProductModal();"
         style="width:50px;height:50px;object-fit:cover;border-radius:3px;cursor:pointer;opacity:${i===modalImgIndex?1:0.5};">`).join("") + `</div>` : ""}
     <h3 style="margin-top:14px;">${escapeHtml(p.name)}</h3>
     <div style="opacity:0.6; font-size:0.78rem;">${cat ? escapeHtml(cat.name) : ""}</div>
@@ -879,7 +949,7 @@ function renderCart(){
   } else {
     body.innerHTML = cart.map((l,i)=>`
       <div class="cart-line">
-        <img class="fade-img" loading="lazy" decoding="async" onload="this.classList.add('loaded')" src="${escapeAttr(l.image||'https://placehold.co/100')}">
+        <img class="fade-img" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="imgFallback(this)" src="${escapeAttr(l.image||'https://placehold.co/100')}">
         <div class="info">
           <div class="name">${escapeHtml(l.name)}</div>
           <div class="meta">${escapeHtml(l.specs||"")} · Qty ${l.qty} · ${money(l.price*l.qty)}</div>
@@ -963,7 +1033,7 @@ function renderAdminProducts(){
     ${products.map(p=>{
       const cat = categories.find(c=>c.id===p.categoryId);
       return `<div class="admin-list-item">
-        <img class="fade-img" loading="lazy" decoding="async" onload="this.classList.add('loaded')" src="${escapeAttr((p.images&&p.images[0])||'https://placehold.co/100')}">
+        <img class="fade-img" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="imgFallback(this)" src="${escapeAttr((p.images&&p.images[0])||'https://placehold.co/100')}">
         <div style="flex:1;">
           <div style="font-weight:600; font-size:0.88rem;">${escapeHtml(p.name)}</div>
           <div class="hint">${cat?escapeHtml(cat.name):""} · ${money(p.price)} · stock ${p.stock||0}${p.sold ? ' · <span style="color:var(--clay);font-weight:600;">Sold</span>' : ''}</div>
