@@ -1,4 +1,4 @@
-const CACHE_NAME = "salaam-garmets-v1";
+const CACHE_NAME = "salaam-garmets-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,10 @@ const APP_SHELL = [
   "./icon-192.png",
   "./icon-512.png",
 ];
+// Shop data (products/categories/config) and uploads come from here — the
+// page itself handles freshness for these, so the service worker stays out
+// of the way instead of serving a stale cached copy.
+const API_ORIGIN = "https://shop-images.okulloz-shop.workers.dev";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -23,32 +27,25 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Network-first for the HTML shell (so shop edits show up quickly),
-// cache-first for everything else, with an offline fallback.
+// Stale-while-revalidate for the app shell and static assets: respond from
+// cache immediately (instant open), then refresh the cache in the
+// background so the next open has the latest version.
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
+  const url = new URL(req.url);
+  if (url.origin === API_ORIGIN) return; // let the page's own logic handle this
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const networkFetch = fetch(req)
         .then((res) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
           return res;
         })
-        .catch(() => caches.match(req).then((res) => res || caches.match("./index.html")))
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(req).then(
-      (cached) =>
-        cached ||
-        fetch(req).then((res) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
-          return res;
-        })
-    )
+        .catch(() => cached || (req.mode === "navigate" ? caches.match("./index.html") : undefined));
+      return cached || networkFetch;
+    })
   );
 });

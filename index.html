@@ -514,13 +514,42 @@ async function putData(key, value, toast){
   }
 }
 
-async function loadAll(){
-  categories = await fetchData("categories", DEFAULT_CATEGORIES);
-  products   = await fetchData("products", DEFAULT_PRODUCTS);
-  config     = await fetchData("config", config);
-  if(!categories || categories.length===0) categories = DEFAULT_CATEGORIES;
-  if(!products) products = [];
+const SHOP_CACHE_KEY = "shop-data-cache-v1";
+function loadCachedShopData(){
+  try{
+    const raw = localStorage.getItem(SHOP_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function cacheShopData(data){
+  try{ localStorage.setItem(SHOP_CACHE_KEY, JSON.stringify(data)); }catch(e){ /* ignore */ }
+}
+function applyShopData(data){
+  categories = (data.categories && data.categories.length) ? data.categories : DEFAULT_CATEGORIES;
+  products = data.products || [];
+  config = data.config || config;
   dataReady = true;
+}
+
+// Fetches categories/products/config at the same time instead of one after
+// another — three parallel requests instead of three in sequence.
+async function fetchShopDataRemote(){
+  const [cats, prods, cfg] = await Promise.all([
+    fetchData("categories", DEFAULT_CATEGORIES),
+    fetchData("products", DEFAULT_PRODUCTS),
+    fetchData("config", config)
+  ]);
+  return {
+    categories: (cats && cats.length) ? cats : DEFAULT_CATEGORIES,
+    products: prods || [],
+    config: cfg
+  };
+}
+
+async function loadAll(){
+  const fresh = await fetchShopDataRemote();
+  applyShopData(fresh);
+  cacheShopData(fresh);
 }
 async function saveCategories(toast){ await putData("categories", categories, toast); }
 async function saveProducts(toast){ await putData("products", products, toast); }
@@ -598,6 +627,14 @@ if ("serviceWorker" in navigator){
 window.addEventListener("hashchange", render);
 window.addEventListener("DOMContentLoaded", init);
 
+function updateBrandBits(){
+  document.getElementById("brand-name").textContent = config.businessName;
+  document.title = config.businessName;
+  document.getElementById("footer-brand-name").textContent = config.businessName;
+  document.getElementById("footer-brand-name2").textContent = config.businessName;
+  document.getElementById("footer-year").textContent = new Date().getFullYear();
+}
+
 async function init(){
   const note = document.getElementById("skel-note");
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -609,15 +646,66 @@ async function init(){
     if (note && !dataReady) note.querySelector("span:last-child").textContent = "Still loading — thanks for your patience…";
   }, 6000);
 
-  await loadAll();
-  clearTimeout(patienceTimer);
-  await loadCart();
-  await loadUploadSecret();
-  document.getElementById("brand-name").textContent = config.businessName;
-  document.getElementById("footer-brand-name").textContent = config.businessName;
-  document.getElementById("footer-brand-name2").textContent = config.businessName;
-  document.getElementById("footer-year").textContent = new Date().getFullYear();
-  render();
+  loadCart();
+  loadUploadSecret();
+
+  // If we have last-known shop data, paint the real page immediately instead
+  // of waiting on the network — this is what makes repeat opens feel instant.
+  const cached = loadCachedShopData();
+  if (cached){
+    applyShopData(cached);
+    clearTimeout(patienceTimer);
+    updateBrandBits();
+    render();
+  }
+
+  // Always fetch the current data too (this is the only load path on a
+  // first-ever visit, and it quietly corrects the cached paint otherwise).
+  try{
+    const fresh = await fetchShopDataRemote();
+    clearTimeout(patienceTimer);
+    const changed = !cached || JSON.stringify(cached) !== JSON.stringify(fresh);
+    applyShopData(fresh);
+    cacheShopData(fresh);
+    updateBrandBits();
+    if (changed) render();
+  }catch(e){
+    console.error("initial data fetch failed", e);
+    clearTimeout(patienceTimer);
+    if (!cached){ dataReady = true; updateBrandBits(); render(); }
+  }
+
+  startAutoRefresh();
+}
+
+/* ---------------- AUTO-REFRESH ----------------
+   Keeps the shop current while it's open: re-checks the live data
+   periodically, right when connectivity returns, and when the tab/app
+   comes back into focus — so shoppers see new products or price/sold
+   changes without ever needing to manually reload. */
+let refreshInFlight = false;
+async function refreshShopDataInBackground(){
+  if (refreshInFlight || !navigator.onLine) return;
+  if (currentRoute()[0] === "admin") return; // don't clobber unsaved admin edits
+  refreshInFlight = true;
+  try{
+    const fresh = await fetchShopDataRemote();
+    const current = { categories, products, config };
+    if (JSON.stringify(current) !== JSON.stringify(fresh)){
+      applyShopData(fresh);
+      cacheShopData(fresh);
+      updateBrandBits();
+      render();
+    }
+  }catch(e){ /* silent — next interval or trigger will retry */ }
+  refreshInFlight = false;
+}
+function startAutoRefresh(){
+  setInterval(refreshShopDataInBackground, 40000);
+  window.addEventListener("online", refreshShopDataInBackground);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refreshShopDataInBackground();
+  });
 }
 
 function currentRoute(){
