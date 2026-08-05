@@ -138,25 +138,16 @@
     border:none; overflow:hidden; padding-top:0; color:#fff;
   }
   .promo-illustration{
-    padding:22px 20px 6px; display:flex; justify-content:center;
+    height:190px; display:flex; align-items:center; justify-content:center;
   }
-  .promo-card .name{color:#fff; font-size:1.05rem;}
-  .promo-card p{font-size:0.8rem; color:rgba(255,255,255,0.82); line-height:1.55; margin:8px 0 14px;}
+  .promo-card .name{color:#fff;}
+  .promo-card .specs{color:rgba(255,255,255,0.75); opacity:1;}
   .promo-wa-btn{
-    display:flex; align-items:center; justify-content:center; gap:8px;
+    display:flex; align-items:center; justify-content:center; gap:7px;
     background:#fff; color:var(--ink); text-decoration:none; font-weight:700;
-    font-size:0.82rem; padding:10px; border-radius:8px; margin-bottom:8px;
+    font-size:0.8rem; padding:9px; border-radius:8px; margin-top:auto;
   }
-  .promo-wa-btn svg{width:15px; height:15px; flex-shrink:0;}
-  .promo-email-link{
-    display:block; text-align:center; color:rgba(255,255,255,0.85);
-    font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-decoration:none; margin-bottom:10px;
-  }
-  .promo-email-link:hover{color:#fff;}
-  .promo-byline{
-    text-align:center; font-size:0.68rem; color:rgba(255,255,255,0.55);
-    border-top:1px dashed rgba(255,255,255,0.2); padding-top:9px;
-  }
+  .promo-wa-btn svg{width:14px; height:14px; flex-shrink:0;}
   .view-btn{
     background:var(--ink); color:var(--linen); border:none; padding:8px 0;
     font-size:0.78rem; border-radius:3px; margin:10px 14px 14px; letter-spacing:0.3px;
@@ -609,7 +600,7 @@ function promoCardHtml(){
   const waLink = `https://wa.me/${SELLER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
   return `<div class="tag-card promo-card">
     <div class="promo-illustration">
-      <svg width="130" height="92" viewBox="0 0 130 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="96" height="68" viewBox="0 0 130 92" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="6" width="92" height="66" rx="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
         <rect x="2" y="6" width="92" height="16" rx="7" fill="rgba(255,255,255,0.12)"/>
         <circle cx="12" cy="14" r="2.4" fill="#fff" opacity="0.7"/>
@@ -624,15 +615,13 @@ function promoCardHtml(){
         <path d="M84 40 Q78 40 78 32" stroke="rgba(255,255,255,0.4)" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
       </svg>
     </div>
-    <div class="body" style="padding:16px;">
-      <div class="name">Need a Website or App Like This?</div>
-      <p>We design and build fast, professional websites, apps, and WhatsApp-order shops — the kind you're using right now.</p>
-      <a class="promo-wa-btn" href="${waLink}" target="_blank" rel="noopener">
+    <div class="body">
+      <div class="name">Need a Website or App?</div>
+      <div class="specs">Web, app &amp; WhatsApp-shop builds</div>
+      <a class="promo-wa-btn" href="${waLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 6.32A7.85 7.85 0 0 0 12.05 4a7.94 7.94 0 0 0-6.9 11.9L4 20l4.2-1.1a7.9 7.9 0 0 0 3.85 1h.01a7.94 7.94 0 0 0 5.54-13.58zM12.06 18.4h-.01a6.6 6.6 0 0 1-3.36-.92l-.24-.14-2.5.66.67-2.44-.16-.25a6.6 6.6 0 1 1 12.28-3.5 6.56 6.56 0 0 1-6.68 6.6zm3.6-4.94c-.2-.1-1.16-.57-1.34-.64-.18-.06-.31-.1-.44.1-.13.19-.5.64-.62.78-.11.13-.23.15-.42.05-.2-.1-.83-.3-1.58-.97-.58-.52-.98-1.16-1.09-1.35-.11-.2 0-.3.09-.4.09-.1.2-.24.29-.36.1-.12.13-.2.2-.33.06-.13.03-.25-.02-.34-.05-.1-.44-1.06-.6-1.45-.16-.38-.32-.33-.44-.33-.11 0-.25 0-.38 0-.13 0-.34.05-.52.24-.18.19-.68.66-.68 1.6s.7 1.86.8 1.99c.1.13 1.37 2.1 3.33 2.94.46.2.83.32 1.11.41.47.15.9.13 1.24.08.38-.06 1.16-.47 1.32-.93.16-.45.16-.84.11-.92-.05-.08-.18-.13-.38-.23z"/></svg>
-        Chat on WhatsApp
+        WhatsApp
       </a>
-      <a class="promo-email-link" href="mailto:okulloabdulsalam@gmail.com">✉️ okulloabdulsalam@gmail.com</a>
-      <div class="promo-byline">By Okullo Abdulsalam — Web &amp; App Developer</div>
     </div>
   </div>`;
 }
