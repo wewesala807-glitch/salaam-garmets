@@ -848,6 +848,30 @@ function go(hash){
   render();
 }
 
+/* ---------------- OVERLAY BACK-BUTTON HANDLING ----------------
+   Product view / cart / admin forms push ONE history entry when they open,
+   so the phone's back button closes them and returns to whatever was
+   underneath (e.g. Home) — instead of leaving the app entirely. Only when
+   nothing is open does back behave like a normal "leave the page". */
+let productHistoryPushed = false;
+let cartHistoryPushed = false;
+
+function pushOverlayState(){ history.pushState({overlay:true}, ""); }
+
+window.addEventListener("popstate", () => {
+  if (cartHistoryPushed && document.getElementById("cart-overlay").classList.contains("show")){
+    cartHistoryPushed = false;
+    _reallyCloseCart();
+    return;
+  }
+  if (productHistoryPushed && document.getElementById("product-overlay").classList.contains("show")){
+    productHistoryPushed = false;
+    _reallyCloseProduct();
+    return;
+  }
+  render();
+});
+
 function render(){
   if(!dataReady) return;
   document.getElementById("brand-name").textContent = config.businessName;
@@ -936,9 +960,17 @@ function openProduct(id){
   if(!activeProduct) return;
   modalImgIndex = 0; modalQty = 1;
   renderProductModal();
+  if (!productHistoryPushed){ pushOverlayState(); productHistoryPushed = true; }
   document.getElementById("product-overlay").classList.add("show");
 }
-function closeProduct(){ document.getElementById("product-overlay").classList.remove("show"); activeProduct=null; }
+function closeProduct(){
+  if (productHistoryPushed){ history.back(); }
+  else { _reallyCloseProduct(); }
+}
+function _reallyCloseProduct(){
+  document.getElementById("product-overlay").classList.remove("show");
+  activeProduct=null;
+}
 
 function renderProductModal(){
   const p = activeProduct;
@@ -1012,10 +1044,15 @@ function updateCartBadge(){
 }
 function openCart(){
   renderCart();
+  if (!cartHistoryPushed){ pushOverlayState(); cartHistoryPushed = true; }
   document.getElementById("cart-overlay").classList.add("show");
   document.getElementById("cart-drawer").classList.add("show");
 }
 function closeCart(){
+  if (cartHistoryPushed){ history.back(); }
+  else { _reallyCloseCart(); }
+}
+function _reallyCloseCart(){
   document.getElementById("cart-overlay").classList.remove("show");
   document.getElementById("cart-drawer").classList.remove("show");
 }
@@ -1158,6 +1195,7 @@ function openProductForm(id){
   `;
   window.__pfSpecs = p.specs || {};
   renderProductSpecFields(specFields);
+  if (!productHistoryPushed){ pushOverlayState(); productHistoryPushed = true; }
   document.getElementById("product-overlay").classList.add("show");
 }
 /* Resize to a sensible max dimension and re-encode as high-quality WebP.
@@ -1301,6 +1339,7 @@ function openCategoryForm(id){
     <button class="btn" style="margin-top:16px;" onclick="saveCategoryForm('${c.id||""}')">Save</button>
     <button class="btn ghost" style="margin-top:8px;" onclick="closeProduct()">Cancel</button>
   `;
+  if (!productHistoryPushed){ pushOverlayState(); productHistoryPushed = true; }
   document.getElementById("product-overlay").classList.add("show");
 }
 async function saveCategoryForm(id){
