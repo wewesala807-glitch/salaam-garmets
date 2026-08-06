@@ -238,7 +238,7 @@
   .brand h1{font-size:1rem;}
   .icon-btn{font-size:.9rem;}
   nav.cats{display:none;}
-  main{padding:16px 10px 78px;}
+  main{padding:16px 10px 60px;}
   .hero{padding:14px 0 6px;}
   .mobile-cat-select{
     display:block; width:100%; margin-top:10px; padding:11px 12px;
@@ -262,29 +262,6 @@
   .sheet{width:96%;padding:16px;}
   .drawer{width:100%;}
   .field-row{flex-direction:column;gap:8px;}
-
-  .bottom-tabs{
-    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:55;
-    background:var(--paper); border-top:1px solid var(--line);
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
-    box-shadow:0 -2px 10px rgba(36,31,46,0.06);
-  }
-  .bottom-tabs .tab-item{
-    flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
-    background:none; border:none; color:var(--ink); opacity:0.55;
-    text-decoration:none; font-size:0.66rem; font-weight:600; padding:6px 2px;
-    position:relative; cursor:pointer;
-  }
-  .bottom-tabs .tab-item.active{opacity:1; color:var(--teal);}
-  .bottom-tabs .tab-icon{font-size:1.15rem; line-height:1;}
-  .bottom-tabs .tab-badge{
-    position:absolute; top:2px; right:calc(50% - 20px); background:var(--clay); color:#fff;
-    font-size:0.6rem; font-weight:700; min-width:15px; height:15px; border-radius:999px;
-    display:flex; align-items:center; justify-content:center; padding:0 3px;
-  }
-}
-@media (min-width:641px){
-  .bottom-tabs{display:none;}
 }
 
 /* ---- SKELETON LOADING STATE ---- */
@@ -416,12 +393,12 @@ img.fade-img.loaded{
 
 <header>
   <div class="nav-row">
-    <a href="#/" class="brand"><span class="dot"></span><h1 id="brand-name">Shop</h1></a>
+    <a href="#/" class="brand" onclick="event.preventDefault(); go('#/');"><span class="dot"></span><h1 id="brand-name">Shop</h1></a>
     <nav class="cats" id="cat-nav"></nav>
     <div class="nav-right">
       <button class="icon-btn" id="install-btn" onclick="promptInstall()" style="display:none;">⤓ Install</button>
       <button class="icon-btn" onclick="openCart()">Cart<span class="badge" id="cart-badge" style="display:none;">0</span></button>
-      <a href="#/admin" class="admin-link">admin</a>
+      <a href="#/admin" class="admin-link" onclick="event.preventDefault(); go('#/admin');">admin</a>
     </div>
   </div>
 </header>
@@ -504,11 +481,9 @@ img.fade-img.loaded{
     <input type="password" id="pin-input" placeholder="Enter PIN">
     <div class="hint" id="pin-err" style="color:var(--clay);"></div>
     <button class="btn" style="margin-top:14px;" onclick="submitPin()">Enter</button>
-    <button class="btn ghost" style="margin-top:8px;" onclick="location.hash='#/'">Cancel</button>
+    <button class="btn ghost" style="margin-top:8px;" onclick="go('#/')">Cancel</button>
   </div>
 </div>
-
-<nav class="bottom-tabs" id="bottom-tabs"></nav>
 
 <div class="toast" id="toast"></div>
 
@@ -864,6 +839,15 @@ function currentRoute(){
   return h.split("/").filter(Boolean);
 }
 
+// Switches views (Home/Category/Admin) WITHOUT adding a new entry to the
+// phone's back-button history. Tabs aren't separate "pages" to step back
+// through — only leaving the app itself should respond to the back button.
+function go(hash){
+  if (location.hash === hash) return;
+  history.replaceState(null, "", hash);
+  render();
+}
+
 function render(){
   if(!dataReady) return;
   document.getElementById("brand-name").textContent = config.businessName;
@@ -871,7 +855,6 @@ function render(){
   document.getElementById("footer-brand-name").textContent = config.businessName;
   document.getElementById("footer-brand-name2").textContent = config.businessName;
   renderCatNav();
-  renderBottomTabs();
   const route = currentRoute();
   document.getElementById("pin-overlay").classList.remove("show");
 
@@ -891,34 +874,8 @@ function renderCatNav(){
   const nav = document.getElementById("cat-nav");
   const route = currentRoute();
   const activeCat = route[0]==="category" ? route[1] : null;
-  nav.innerHTML = `<a href="#/" class="${!activeCat && route[0]!=='admin' ? 'active':''}">All</a>` +
-    categories.map(c => `<a href="#/category/${c.id}" class="${activeCat===c.id?'active':''}">${escapeHtml(c.name)}</a>`).join("");
-}
-
-function renderBottomTabs(){
-  const bar = document.getElementById("bottom-tabs");
-  if (!bar) return;
-  const route = currentRoute();
-  const isHome = route[0] !== "admin";
-  const isAdminTab = route[0] === "admin";
-  const count = cart.reduce((s,l)=>s+l.qty,0);
-  const waLink = `https://wa.me/${(config.whatsapp||"").replace(/[^0-9]/g,"")}?text=${encodeURIComponent("Hi! I have a question about an item.")}`;
-
-  bar.innerHTML = `
-    <a href="#/" class="tab-item ${isHome ? "active" : ""}">
-      <span class="tab-icon">🏠</span><span>Home</span>
-    </a>
-    <button class="tab-item" onclick="openCart()">
-      <span class="tab-icon">🛒</span><span>Cart</span>
-      ${count>0 ? `<span class="tab-badge">${count}</span>` : ""}
-    </button>
-    <a class="tab-item" href="${waLink}" target="_blank" rel="noopener">
-      <span class="tab-icon">💬</span><span>Chat</span>
-    </a>
-    <a href="#/admin" class="tab-item ${isAdminTab ? "active" : ""}">
-      <span class="tab-icon">⚙️</span><span>Admin</span>
-    </a>
-  `;
+  nav.innerHTML = `<a href="#/" onclick="event.preventDefault(); go('#/');" class="${!activeCat && route[0]!=='admin' ? 'active':''}">All</a>` +
+    categories.map(c => `<a href="#/category/${c.id}" onclick="event.preventDefault(); go('#/category/${c.id}');" class="${activeCat===c.id?'active':''}">${escapeHtml(c.name)}</a>`).join("");
 }
 
 /* ---------------- CATALOG ---------------- */
@@ -931,7 +888,7 @@ function renderCatalog(catId){
       <h2>${cat ? escapeHtml(cat.name) : escapeHtml(config.businessName)}</h2>
       <p>${cat ? "Browse this category and tap a piece to see details." : "Modest Fashion &amp; Everyday Essentials — tap any product for details, add it to your cart, then send your order or inquire about it straight through WhatsApp."}</p>
     </div>
-    <select id="mobile-cat-select" class="mobile-cat-select" onchange="if(this.value){location.hash='#/category/'+this.value;}else{location.hash='#/';}">
+    <select id="mobile-cat-select" class="mobile-cat-select" onchange="if(this.value){go('#/category/'+this.value);}else{go('#/');}">
       <option value="">All categories</option>
       ${categories.map(c=>`<option value="${c.id}" ${c.id===catId?"selected":""}>${escapeHtml(c.name)}</option>`).join("")}
     </select>`;
@@ -1052,7 +1009,6 @@ function updateCartBadge(){
   const badge = document.getElementById("cart-badge");
   badge.textContent = count;
   badge.style.display = count>0 ? "flex" : "none";
-  renderBottomTabs();
 }
 function openCart(){
   renderCart();
